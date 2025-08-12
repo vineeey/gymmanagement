@@ -1,0 +1,165 @@
+{% extends 'base.html' %}
+
+{% block title %}Customer Dashboard - FitLife Gym{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Profile Overview -->
+    <div class="col-md-4 mb-4">
+        <div class="card stats-card h-100">
+            <div class="card-body text-center">
+                <i class="fas fa-user-circle fa-4x mb-3"></i>
+                <h4>{{ user.get_full_name|default:user.username }}</h4>
+                <p class="mb-2">{{ customer_profile.get_goal_display }}</p>
+                <hr class="my-3">
+                <div class="row">
+                    <div class="col-6">
+                        <h5>{{ customer_profile.age }}</h5>
+                        <small>Age</small>
+                    </div>
+                    <div class="col-6">
+                        <h5>{{ customer_profile.bmi }}</h5>
+                        <small>BMI</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="col-md-8 mb-4">
+        <div class="row">
+            <div class="col-md-4 mb-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-weight-hanging fa-2x mb-2"></i>
+                        <h4>{{ customer_profile.weight }} kg</h4>
+                        <small>Current Weight</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-ruler-vertical fa-2x mb-2"></i>
+                        <h4>{{ customer_profile.height }} cm</h4>
+                        <small>Height</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4 mb-3">
+                <div class="card stats-card text-center">
+                    <div class="card-body">
+                        <i class="fas fa-apple-alt fa-2x mb-2"></i>
+                        <h4>{{ diet_plans.count }}</h4>
+                        <small>Diet Plans</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Trainer Info -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">
+                    <i class="fas fa-user-tie me-2"></i>Your Trainer
+                </h5>
+                {% if customer_profile.trainer %}
+                    <div class="d-flex align-items-center">
+                        <i class="fas fa-user-circle fa-3x text-warning me-3"></i>
+                        <div>
+                            <h6 class="mb-1">{{ customer_profile.trainer.user.get_full_name|default:customer_profile.trainer.user.username }}</h6>
+                            <p class="mb-0 text-muted">
+                                <i class="fas fa-envelope me-2"></i>{{ customer_profile.trainer.user.email }}
+                                {% if customer_profile.trainer.phone %}
+                                    <i class="fas fa-phone ms-3 me-2"></i>{{ customer_profile.trainer.phone }}
+                                {% endif %}
+                            </p>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle me-2"></i>
+                        No trainer assigned yet. A trainer will be assigned to you soon!
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Diet Plans -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-utensils me-2"></i>Your Diet Plans
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if diet_plans %}
+                    {% for plan in diet_plans %}
+                        <div class="card mb-3">
+                            <div class="card-body">
+                                <div class="d-flex justify-content-between align-items-start">
+                                    <div>
+                                        <h6 class="card-title">{{ plan.title }}</h6>
+                                        <p class="card-text text-muted">{{ plan.description|truncatewords:20 }}</p>
+                                        <small class="text-muted">
+                                            <i class="fas fa-calendar me-1"></i>
+                                            Created: {{ plan.created_at|date:"M d, Y" }}
+                                        </small>
+                                    </div>
+                                    <button class="btn btn-outline-primary btn-sm" type="button" data-bs-toggle="collapse" data-bs-target="#plan-{{ plan.id }}">
+                                        <i class="fas fa-eye me-1"></i>View Details
+                                    </button>
+                                </div>
+
+                                <div class="collapse mt-3" id="plan-{{ plan.id }}">
+                                    <div class="row">
+                                        <div class="col-md-6 mb-3">
+                                            <h6><i class="fas fa-sun text-warning me-2"></i>Breakfast</h6>
+                                            <p class="small">{{ plan.breakfast|linebreaks }}</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6><i class="fas fa-sun text-danger me-2"></i>Lunch</h6>
+                                            <p class="small">{{ plan.lunch|linebreaks }}</p>
+                                        </div>
+                                        <div class="col-md-6 mb-3">
+                                            <h6><i class="fas fa-moon text-primary me-2"></i>Dinner</h6>
+                                            <p class="small">{{ plan.dinner|linebreaks }}</p>
+                                        </div>
+                                        {% if plan.snacks %}
+                                            <div class="col-md-6 mb-3">
+                                                <h6><i class="fas fa-cookie text-success me-2"></i>Snacks</h6>
+                                                <p class="small">{{ plan.snacks|linebreaks }}</p>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                    {% if plan.notes %}
+                                        <div class="alert alert-light">
+                                            <h6><i class="fas fa-sticky-note me-2"></i>Additional Notes</h6>
+                                            <p class="mb-0">{{ plan.notes|linebreaks }}</p>
+                                        </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                        <h5>No Diet Plans Yet</h5>
+                        <p class="mb-0">Your trainer will create personalized diet plans for you soon!</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

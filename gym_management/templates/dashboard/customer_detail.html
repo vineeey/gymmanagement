@@ -1,0 +1,164 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ customer.user_profile.user.username }} - Customer Details{% endblock %}
+
+{% block content %}
+<div class="row">
+    <!-- Customer Profile -->
+    <div class="col-md-4 mb-4">
+        <div class="card">
+            <div class="card-body text-center">
+                <i class="fas fa-user-circle fa-4x text-primary mb-3"></i>
+                <h4>{{ customer.user_profile.user.get_full_name|default:customer.user_profile.user.username }}</h4>
+                <p class="text-muted mb-3">{{ customer.get_goal_display }}</p>
+
+                <div class="row text-center mb-3">
+                    <div class="col-4">
+                        <h6>{{ customer.age }}</h6>
+                        <small class="text-muted">Age</small>
+                    </div>
+                    <div class="col-4">
+                        <h6>{{ customer.weight }}kg</h6>
+                        <small class="text-muted">Weight</small>
+                    </div>
+                    <div class="col-4">
+                        <h6>{{ customer.height }}cm</h6>
+                        <small class="text-muted">Height</small>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <h5>
+                        <span class="badge {% if customer.bmi < 18.5 %}bg-warning{% elif customer.bmi > 25 %}bg-danger{% else %}bg-success{% endif %}">
+                            BMI: {{ customer.bmi }}
+                        </span>
+                    </h5>
+                </div>
+
+                {% if customer.diseases %}
+                    <div class="alert alert-warning">
+                        <h6><i class="fas fa-exclamation-triangle me-2"></i>Medical Conditions</h6>
+                        <p class="small mb-0">{{ customer.diseases }}</p>
+                    </div>
+                {% endif %}
+
+                <div class="contact-info">
+                    <p class="small text-muted mb-1">
+                        <i class="fas fa-envelope me-2"></i>{{ customer.user_profile.user.email }}
+                    </p>
+                    {% if customer.user_profile.phone %}
+                        <p class="small text-muted mb-0">
+                            <i class="fas fa-phone me-2"></i>{{ customer.user_profile.phone }}
+                        </p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Diet Plans -->
+    <div class="col-md-8 mb-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">
+                    <i class="fas fa-utensils me-2"></i>Diet Plans ({{ diet_plans.count }})
+                </h5>
+                <a href="{% url 'dashboard:create_diet_plan' customer.id %}" class="btn btn-success">
+                    <i class="fas fa-plus me-2"></i>Create New Plan
+                </a>
+            </div>
+            <div class="card-body">
+                {% if diet_plans %}
+                    {% for plan in diet_plans %}
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <div class="d-flex justify-content-between align-items-center">
+                                    <h6 class="mb-0">{{ plan.title }}</h6>
+                                    <small class="text-muted">
+                                        {{ plan.created_at|date:"M d, Y" }}
+                                        {% if plan.updated_at != plan.created_at %}
+                                            (Updated: {{ plan.updated_at|date:"M d, Y" }})
+                                        {% endif %}
+                                    </small>
+                                </div>
+                            </div>
+                            <div class="card-body">
+                                <p class="card-text">{{ plan.description }}</p>
+
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="text-warning">
+                                            <i class="fas fa-sun me-2"></i>Breakfast
+                                        </h6>
+                                        <div class="bg-light p-3 rounded">
+                                            {{ plan.breakfast|linebreaks }}
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="text-danger">
+                                            <i class="fas fa-sun me-2"></i>Lunch
+                                        </h6>
+                                        <div class="bg-light p-3 rounded">
+                                            {{ plan.lunch|linebreaks }}
+                                        </div>
+                                    </div>
+
+                                    <div class="col-md-6 mb-3">
+                                        <h6 class="text-primary">
+                                            <i class="fas fa-moon me-2"></i>Dinner
+                                        </h6>
+                                        <div class="bg-light p-3 rounded">
+                                            {{ plan.dinner|linebreaks }}
+                                        </div>
+                                    </div>
+
+                                    {% if plan.snacks %}
+                                        <div class="col-md-6 mb-3">
+                                            <h6 class="text-success">
+                                                <i class="fas fa-cookie me-2"></i>Snacks
+                                            </h6>
+                                            <div class="bg-light p-3 rounded">
+                                                {{ plan.snacks|linebreaks }}
+                                            </div>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                {% if plan.notes %}
+                                    <div class="alert alert-info">
+                                        <h6><i class="fas fa-sticky-note me-2"></i>Additional Notes</h6>
+                                        {{ plan.notes|linebreaks }}
+                                    </div>
+                                {% endif %}
+
+                                <div class="text-muted small">
+                                    <i class="fas fa-user-tie me-1"></i>
+                                    Created by: {{ plan.trainer.user.username }}
+                                </div>
+                            </div>
+                        </div>
+                    {% endfor %}
+                {% else %}
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                        <h5>No Diet Plans Yet</h5>
+                        <p class="mb-3">Create a personalized diet plan for this customer based on their goals and health conditions.</p>
+                        <a href="{% url 'dashboard:create_diet_plan' customer.id %}" class="btn btn-success">
+                            <i class="fas fa-plus me-2"></i>Create First Diet Plan
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 text-center">
+        <a href="{% url 'dashboard:home' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,194 @@
+{% extends 'base.html' %}
+
+{% block title %}Trainer Dashboard - FitLife Gym{% endblock %}
+
+{% block content %}
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card stats-card">
+            <div class="card-body text-center">
+                <i class="fas fa-user-tie fa-4x mb-3"></i>
+                <h3>Welcome, Trainer {{ user.get_full_name|default:user.username }}!</h3>
+                <p class="mb-0">Manage your customers and create personalized diet plans</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Row -->
+<div class="row mb-4">
+    <div class="col-md-4 mb-3">
+        <div class="card stats-card text-center">
+            <div class="card-body">
+                <i class="fas fa-users fa-2x mb-2"></i>
+                <h4>{{ customers.count }}</h4>
+                <small>Assigned Customers</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card stats-card text-center">
+            <div class="card-body">
+                <i class="fas fa-user-plus fa-2x mb-2"></i>
+                <h4>{{ all_customers.count }}</h4>
+                <small>Total Customers</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4 mb-3">
+        <div class="card stats-card text-center">
+            <div class="card-body">
+                <i class="fas fa-clipboard-list fa-2x mb-2"></i>
+                <h4>{{ customers|length }}</h4>
+                <small>Active Plans</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- My Assigned Customers -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-users me-2"></i>My Assigned Customers
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if customers %}
+                    <div class="row">
+                        {% for customer in customers %}
+                            <div class="col-md-6 mb-3">
+                                <div class="card">
+                                    <div class="card-body">
+                                        <div class="d-flex justify-content-between align-items-start">
+                                            <div>
+                                                <h6 class="card-title">
+                                                    <i class="fas fa-user-circle me-2"></i>
+                                                    {{ customer.user_profile.user.get_full_name|default:customer.user_profile.user.username }}
+                                                </h6>
+                                                <p class="card-text small text-muted">
+                                                    <i class="fas fa-target me-1"></i>Goal: {{ customer.get_goal_display }}<br>
+                                                    <i class="fas fa-birthday-cake me-1"></i>Age: {{ customer.age }} |
+                                                    <i class="fas fa-weight me-1"></i>{{ customer.weight }}kg |
+                                                    <i class="fas fa-ruler-vertical me-1"></i>{{ customer.height }}cm<br>
+                                                    <i class="fas fa-calculator me-1"></i>BMI: {{ customer.bmi }}
+                                                </p>
+                                                {% if customer.diseases %}
+                                                    <small class="text-warning">
+                                                        <i class="fas fa-exclamation-triangle me-1"></i>
+                                                        Medical conditions noted
+                                                    </small>
+                                                {% endif %}
+                                            </div>
+                                            <div class="btn-group-vertical">
+                                                <a href="{% url 'dashboard:customer_detail' customer.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye me-1"></i>View
+                                                </a>
+                                                <a href="{% url 'dashboard:create_diet_plan' customer.id %}" class="btn btn-sm btn-outline-success">
+                                                    <i class="fas fa-plus me-1"></i>Diet Plan
+                                                </a>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    </div>
+                {% else %}
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                        <h5>No Assigned Customers Yet</h5>
+                        <p class="mb-0">You can assign yourself to customers from the list below.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- All Customers (Available for Assignment) -->
+<div class="row">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="mb-0">
+                    <i class="fas fa-user-plus me-2"></i>All Customers
+                </h5>
+            </div>
+            <div class="card-body">
+                {% if all_customers %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Customer</th>
+                                    <th>Goal</th>
+                                    <th>Age/Weight/Height</th>
+                                    <th>BMI</th>
+                                    <th>Trainer</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for customer in all_customers %}
+                                    <tr>
+                                        <td>
+                                            <i class="fas fa-user-circle me-2"></i>
+                                            {{ customer.user_profile.user.get_full_name|default:customer.user_profile.user.username }}
+                                            {% if customer.diseases %}
+                                                <small class="text-warning d-block">
+                                                    <i class="fas fa-exclamation-triangle me-1"></i>
+                                                    Medical conditions
+                                                </small>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-info">{{ customer.get_goal_display }}</span>
+                                        </td>
+                                        <td>
+                                            {{ customer.age }}y / {{ customer.weight }}kg / {{ customer.height }}cm
+                                        </td>
+                                        <td>
+                                            <span class="badge {% if customer.bmi < 18.5 %}bg-warning{% elif customer.bmi > 25 %}bg-danger{% else %}bg-success{% endif %}">
+                                                {{ customer.bmi }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            {% if customer.trainer %}
+                                                <i class="fas fa-user-tie me-1"></i>
+                                                {{ customer.trainer.user.username }}
+                                            {% else %}
+                                                <span class="text-muted">Unassigned</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <div class="btn-group btn-group-sm">
+                                                <a href="{% url 'dashboard:customer_detail' customer.id %}" class="btn btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if customer.trainer != user_profile %}
+                                                    <a href="{% url 'dashboard:assign_trainer' customer.id %}" class="btn btn-outline-success">
+                                                        <i class="fas fa-user-plus"></i> Assign to Me
+                                                    </a>
+                                                {% endif %}
+                                            </div>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="alert alert-info text-center">
+                        <i class="fas fa-info-circle fa-2x mb-3"></i>
+                        <h5>No Customers Yet</h5>
+                        <p class="mb-0">No customers have registered yet.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
